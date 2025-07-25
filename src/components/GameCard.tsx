@@ -12,7 +12,7 @@ interface GameCardProps {
   totalCards: number;
 }
 
-const GameCard: React.FC<GameCardProps> = ({ card, cardNumber, totalCards }) => {
+const GameCard: React.FC<GameCardProps> = ({ card }) => {
   return (
     <div className="bg-white rounded-2xl shadow-xl p-8 mb-8 transform transition-all duration-300 hover:shadow-2xl">
       {/* Removed progress bar and card counter as requested */}

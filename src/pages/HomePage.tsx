@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '../contexts/AppContext';
 import QuizCard from '../components/QuizCard';
-import { Zap, Shield, Settings } from 'lucide-react';
+import { Zap, Settings, CircleOff, CheckCheck } from 'lucide-react';
 
 const HomePage: React.FC = () => {
   const navigate = useNavigate();
@@ -15,12 +15,11 @@ const HomePage: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <div className="p-2 bg-green-100 rounded-xl">
-                <Zap className="w-8 h-8 text-green-600" />
-              </div>
+
+                <img src="/images/logo.png" alt="Groupe Ouellet logo" className='rounded-xl h-[84px] border-2 border-green-100 py-1' />
               <div>
-                <h1 className="text-3xl font-bold text-gray-900">Quiz Master</h1>
-                <p className="text-green-600 font-medium">Application de Catégorisation</p>
+                <h1 className="text-3xl font-bold text-gray-900">CatéGO</h1>
+                <p className="text-green-600 font-medium">Une application de Groupe Ouellet</p>
               </div>
             </div>
             
@@ -29,7 +28,7 @@ const HomePage: React.FC = () => {
                 onClick={() => navigate('/validation')}
                 className="flex items-center space-x-2 px-4 py-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-xl transition-all duration-200"
               >
-                <Shield className="w-5 h-5" />
+                <CheckCheck className="w-5 h-5" />
                 <span className="font-medium">Validation</span>
               </button>
               <button
@@ -51,15 +50,15 @@ const HomePage: React.FC = () => {
             Choisissez votre Quiz
           </h2>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Testez vos connaissances en associant des éléments à leurs catégories appropriées. 
-            Sélectionnez un quiz ci-dessous pour commencer !
+            Entrainer notre IA en associant des éléments à leur catégorie correspondante. 
+            Pour commencer, sélectionnez un quiz !
           </p>
         </div>
 
         {activeQuizzes.length === 0 ? (
           <div className="text-center py-16">
             <div className="p-4 bg-gray-100 rounded-full w-24 h-24 mx-auto mb-6 flex items-center justify-center">
-              <Zap className="w-12 h-12 text-gray-400" />
+              <CircleOff className="w-12 h-12 text-gray-400" />
             </div>
             <h3 className="text-2xl font-semibold text-gray-700 mb-2">
               Aucun quiz disponible

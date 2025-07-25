@@ -1,5 +1,5 @@
 import React from 'react';
-import { Play, Users, Calendar } from 'lucide-react';
+import { Play } from 'lucide-react';
 
 interface Quiz {
   id: number;
@@ -17,7 +17,7 @@ const QuizCard: React.FC<QuizCardProps> = ({ quiz, onClick }) => {
   return (
     <div
       onClick={onClick}
-      className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 cursor-pointer group overflow-hidden"
+      className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 cursor-pointer group overflow-hidden border-2 border-green-200 group-hover:text-green-300"
     >
       <div className="p-8">
         <div className="flex items-start justify-between mb-4">
@@ -34,12 +34,6 @@ const QuizCard: React.FC<QuizCardProps> = ({ quiz, onClick }) => {
         <div className="flex items-center justify-between mt-6">
           <div className="flex items-center space-x-4 text-sm text-gray-500">
             <div className="flex items-center space-x-1">
-              <Users className="w-4 h-4" />
-              <span>Actif</span>
-            </div>
-            <div className="flex items-center space-x-1">
-              <Calendar className="w-4 h-4" />
-              <span>Nouveau</span>
             </div>
           </div>
           
@@ -50,7 +44,7 @@ const QuizCard: React.FC<QuizCardProps> = ({ quiz, onClick }) => {
         </div>
       </div>
       
-      <div className="h-1 bg-gradient-to-r from-green-400 to-green-600 group-hover:from-green-500 group-hover:to-green-700 transition-all duration-300"></div>
+    
     </div>
   );
 };

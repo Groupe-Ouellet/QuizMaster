@@ -4,7 +4,6 @@ import { useApp } from '../contexts/AppContext';
 import UserNameModal from '../components/UserNameModal';
 import GameCard from '../components/GameCard';
 import CategoryButton from '../components/CategoryButton';
-import SuccessAnimation from '../components/SuccessAnimation';
 import { ArrowLeft, Trophy, RotateCcw } from 'lucide-react';
 
 const QuizPage: React.FC = () => {
@@ -31,7 +30,7 @@ const QuizPage: React.FC = () => {
     if (id) {
       loadQuiz(parseInt(id));
     }
-  }, [id, loadQuiz]);
+  }, [id]);
 
   useEffect(() => {
     if (currentQuiz && !userName) {
@@ -54,6 +53,7 @@ const QuizPage: React.FC = () => {
       setTimeout(() => {
         setSelectedCategory(null);
         nextCard();
+        
       }, 200);
     }
   };

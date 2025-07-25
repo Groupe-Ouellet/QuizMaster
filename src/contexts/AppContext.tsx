@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 
 interface Quiz {
   id: number;
@@ -78,6 +78,11 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
   const [authType, setAuthType] = useState<'validation' | 'admin' | null>(null);
   const [pendingSubmissions, setPendingSubmissions] = useState<{ [key: string]: Submission[] }>({});
 
+  // Debug: Log currentCardIndex whenever it changes
+  useEffect(() => {
+    console.log('currentCardIndex changed:', currentCardIndex);
+  }, [currentCardIndex]);
+
   const API_BASE = '/api';
 
   const loadActiveQuizzes = async () => {
@@ -100,7 +105,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     }
   };
 
-  const loadQuiz = async (id: number) => {
+  const loadQuiz = useCallback(async (id: number) => {
     try {
       const response = await fetch(`${API_BASE}/quiz/${id}`);
       const data = await response.json();
@@ -111,7 +116,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     } catch (error) {
       console.error('Error loading quiz:', error);
     }
-  };
+  }, []);
 
   const submitAnswer = async (cardId: number, categoryId: number) => {
     try {
@@ -132,7 +137,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
   };
 
   const nextCard = () => {
-    setCurrentCardIndex(prevIndex => prevIndex + 1);
+    setCurrentCardIndex(prev => prev + 1);
   };
 
   const resetQuiz = () => {
@@ -186,7 +191,6 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
         },
         body: JSON.stringify({ status }),
       });
-      
       // Remove from pending submissions
       setPendingSubmissions(prev => {
         const updated = { ...prev };

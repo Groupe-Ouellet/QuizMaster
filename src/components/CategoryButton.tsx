@@ -17,7 +17,7 @@ const CategoryButton: React.FC<CategoryButtonProps> = ({ category, onClick, isSe
     <button
       onClick={onClick}
       className={`
-        w-full px-6 py-4 rounded-xl font-semibold text-lg
+        w-full px-4 sm:px-6 py-3 sm:py-4 rounded-xl font-semibold text-base sm:text-lg
         transition-all duration-300 transform hover:scale-105
         ${isSelected 
           ? 'bg-green-500 text-white shadow-lg' 
@@ -25,6 +25,7 @@ const CategoryButton: React.FC<CategoryButtonProps> = ({ category, onClick, isSe
         }
         focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2
         shadow-md hover:shadow-lg
+        mb-2 sm:mb-0
       `}
     >
       {category.name}

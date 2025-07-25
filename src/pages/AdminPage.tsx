@@ -761,11 +761,7 @@ const AdminPage: React.FC = () => {
                   <li><strong>XLSX :</strong> Format Excel avec colonnes Description et Catégorie (entièrement fonctionnel)</li>
                   <li><strong>SQL Database :</strong> Téléchargement complet de la base de données SQLite (entièrement fonctionnel)</li>
                 </ul>
-                <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-lg">
-                  <p className="text-green-800 text-sm font-medium">
-                    ✅ Toutes les options d'export sont maintenant visibles et fonctionnelles, y compris XLSX et SQL Database.
-                  </p>
-                </div>
+                
               </div>
             </div>
           </div>

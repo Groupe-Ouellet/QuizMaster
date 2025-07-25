@@ -1,6 +1,16 @@
-const express = require('express');
-const cors = require('cors');
-const path = require('path');
+import express from 'express';
+import cors from 'cors';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+import quizRoutes from './routes/quiz.js';
+import cardsRoutes from './routes/cards.js';
+import categoriesRoutes from './routes/categories.js';
+import submissionsRoutes from './routes/submissions.js';
+import exportRoutes from './routes/export.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -11,11 +21,11 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, '../dist')));
 
 // Routes
-app.use('/api/quiz', require('./routes/quiz'));
-app.use('/api/cards', require('./routes/cards'));
-app.use('/api/categories', require('./routes/categories'));
-app.use('/api/submissions', require('./routes/submissions'));
-app.use('/api/export', require('./routes/export'));
+app.use('/api/quiz', quizRoutes);
+app.use('/api/cards', cardsRoutes);
+app.use('/api/categories', categoriesRoutes);
+app.use('/api/submissions', submissionsRoutes);
+app.use('/api/export', exportRoutes);
 
 // Auth middleware for protected routes
 const authMiddleware = (req, res, next) => {

@@ -1,10 +1,15 @@
-const express = require('express');
+import express from 'express';
+import path from 'path';
+import fs from 'fs';
+import XLSX from 'xlsx';
+import { createObjectCsvWriter as createCsvWriter } from 'csv-writer';
+import db from '../database.js';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 const router = express.Router();
-const path = require('path');
-const fs = require('fs');
-const XLSX = require('xlsx');
-const createCsvWriter = require('csv-writer').createObjectCsvWriter;
-const db = require('../database');
 
 // Export data in various formats
 router.post('/data', async (req, res) => {
@@ -135,4 +140,4 @@ router.post('/data', async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

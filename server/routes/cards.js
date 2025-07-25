@@ -1,6 +1,7 @@
-const express = require('express');
+import express from 'express';
+import db from '../database.js';
+
 const router = express.Router();
-const db = require('../database');
 
 // Get cards for a specific quiz
 router.get('/quiz/:quizId', (req, res) => {
@@ -66,4 +67,4 @@ router.delete('/:id', (req, res) => {
   });
 });
 
-module.exports = router;
+export default router;

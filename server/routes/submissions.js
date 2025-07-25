@@ -1,6 +1,7 @@
-const express = require('express');
+import express from 'express';
+import db from '../database.js';
+
 const router = express.Router();
-const db = require('../database');
 
 // Create new submission
 router.post('/', (req, res) => {
@@ -125,4 +126,4 @@ router.get('/export', (req, res) => {
   });
 });
 
-module.exports = router;
+export default router;

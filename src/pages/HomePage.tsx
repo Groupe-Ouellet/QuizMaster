@@ -9,7 +9,7 @@ const HomePage: React.FC = () => {
   const { activeQuizzes } = useApp();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-green-50">
+    <div className="flex flex-col min-h-screen bg-gradient-to-br from-green-50 via-white to-green-50">
       {/* Header */}
       <header className="bg-white shadow-sm border-b border-green-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
@@ -45,7 +45,7 @@ const HomePage: React.FC = () => {
       </header>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <main className="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="text-center mb-12">
           <h2 className="text-4xl font-bold text-gray-900 mb-4">
             Choisissez votre Quiz
@@ -85,7 +85,7 @@ const HomePage: React.FC = () => {
       <footer className="bg-white border-t border-green-100 mt-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="text-center text-gray-500">
-            <p>&copy; 2025 Quiz Master. Application de catégorisation interactive.</p>
+            <p>&copy; 2025 Group Ouellet</p>
           </div>
         </div>
       </footer>

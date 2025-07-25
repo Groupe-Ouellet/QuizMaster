@@ -35,6 +35,11 @@ const AdminPage: React.FC = () => {
   const [showCategoryForm, setShowCategoryForm] = useState(false);
   const [cardForm, setCardForm] = useState({ text_description: '' });
   const [categoryForm, setCategoryForm] = useState({ name: '' });
+  const [showBulkCardForm, setShowBulkCardForm] = useState(false);
+  const [showBulkCategoryForm, setShowBulkCategoryForm] = useState(false);
+  const [bulkCardInput, setBulkCardInput] = useState('');
+  const [bulkCategoryInput, setBulkCategoryInput] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false); // To disable button during bulk add
 
   // Export states
   const [exportFilters, setExportFilters] = useState({
@@ -59,6 +64,9 @@ const AdminPage: React.FC = () => {
   useEffect(() => {
     if (selectedQuizId) {
       loadQuizContent(selectedQuizId);
+    } else {
+      setCards([]);
+      setCategories([]);
     }
   }, [selectedQuizId]);
 
@@ -83,10 +91,8 @@ const AdminPage: React.FC = () => {
         fetch(`${API_BASE}/cards/quiz/${quizId}`),
         fetch(`${API_BASE}/categories/quiz/${quizId}`)
       ]);
-
       const cardsData = await cardsRes.json();
       const categoriesData = await categoriesRes.json();
-
       setCards(cardsData.cards || []);
       setCategories(categoriesData.categories || []);
     } catch (error) {
@@ -237,6 +243,74 @@ const AdminPage: React.FC = () => {
       }
     } catch (error) {
       console.error('Error deleting category:', error);
+    }
+  };
+  
+  /**
+   * Handles bulk creation by sending multiple individual requests from the frontend.
+   * This avoids needing a dedicated bulk endpoint on the server.
+   */
+  const handleBulkCreateFromFrontend = async (e: React.FormEvent, type: 'cards' | 'categories') => {
+    e.preventDefault();
+    if (!selectedQuizId || isSubmitting) return;
+
+    setIsSubmitting(true);
+
+    const input = type === 'cards' ? bulkCardInput : bulkCategoryInput;
+    const lines = input.split('\n').map(line => line.trim()).filter(line => line.length > 0);
+    
+    if (lines.length === 0) {
+      setIsSubmitting(false);
+      return;
+    }
+
+    const endpoint = type === 'cards' ? `${API_BASE}/cards` : `${API_BASE}/categories`;
+
+    // Create an array of fetch promises, one for each line
+    const requests = lines.map(line => {
+      const body = type === 'cards'
+        ? { text_description: line, quiz_id: selectedQuizId }
+        : { name: line, quiz_id: selectedQuizId };
+      
+      return fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+    });
+
+    try {
+      // Execute all requests in parallel and wait for them all to finish
+      const responses = await Promise.all(requests);
+
+      const failedResponses = responses.filter(res => !res.ok);
+
+      if (failedResponses.length > 0) {
+        alert(`Échec de l'ajout de ${failedResponses.length} sur ${lines.length} éléments. Veuillez consulter la console pour plus de détails.`);
+        console.error("Failed responses:", failedResponses);
+      } else {
+        alert(`${lines.length} ${type === 'cards' ? 'cartes' : 'catégories'} ajoutées avec succès!`);
+      }
+      
+      // Always refresh content to show what was successfully added
+      if (selectedQuizId) loadQuizContent(selectedQuizId);
+
+      // Close form and clear input only on full success
+      if (failedResponses.length === 0) {
+        if (type === 'cards') {
+          setShowBulkCardForm(false);
+          setBulkCardInput('');
+        } else {
+          setShowBulkCategoryForm(false);
+          setBulkCategoryInput('');
+        }
+      }
+    } catch (error) {
+      console.error(`Error during bulk creation of ${type}:`, error);
+      alert('Une erreur réseau inattendue est survenue lors de l\'opération en masse.');
+    } finally {
+      // IMPORTANT: Always reset the submitting state
+      setIsSubmitting(false);
     }
   };
 
@@ -517,16 +591,25 @@ const AdminPage: React.FC = () => {
                 <div className="bg-white rounded-2xl shadow-lg p-6">
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="text-xl font-bold text-gray-900">Cartes</h3>
-                    <button
-                      onClick={() => setShowCardForm(true)}
-                      className="flex items-center space-x-2 px-3 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors duration-200"
-                    >
-                      <Plus className="w-4 h-4" />
-                      <span>Ajouter</span>
-                    </button>
+                    <div className="flex items-center space-x-2">
+                      <button
+                        onClick={() => setShowBulkCardForm(true)}
+                        className="flex items-center space-x-2 px-3 py-2 text-sm bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors duration-200"
+                      >
+                        <Plus className="w-4 h-4" />
+                        <span>Ajout en masse</span>
+                      </button>
+                      <button
+                        onClick={() => setShowCardForm(true)}
+                        className="flex items-center space-x-2 px-3 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors duration-200"
+                      >
+                        <Plus className="w-4 h-4" />
+                        <span>Ajouter</span>
+                      </button>
+                    </div>
                   </div>
                   
-                  <div className="space-y-3">
+                  <div className="space-y-3 max-h-96 overflow-y-auto pr-2">
                     {cards.map((card) => (
                       <div key={card.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                         <span className="font-medium text-gray-900">{card.text_description}</span>
@@ -582,22 +665,62 @@ const AdminPage: React.FC = () => {
                       </div>
                     </div>
                   )}
+                  {/* Bulk Card Form Modal */}
+                  {showBulkCardForm && (
+                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                      <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full">
+                        <div className="p-6">
+                          <h3 className="text-xl font-bold text-gray-900 mb-4">Ajout en masse de Cartes</h3>
+                          <form onSubmit={(e) => handleBulkCreateFromFrontend(e, 'cards')}>
+                            <div className="mb-4">
+                              <label htmlFor="bulk-cards" className="block text-sm font-medium text-gray-700 mb-2">
+                                Descriptions des cartes (une par ligne)
+                              </label>
+                              <textarea
+                                id="bulk-cards"
+                                value={bulkCardInput}
+                                onChange={(e) => setBulkCardInput(e.target.value)}
+                                className="w-full h-40 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                placeholder={"Exemple de carte 1\nExemple de carte 2\nExemple de carte 3"}
+                                required
+                              />
+                            </div>
+                            <div className="flex justify-end space-x-3">
+                              <button type="button" onClick={() => setShowBulkCardForm(false)} className="px-4 py-2 text-gray-600 hover:text-gray-700" disabled={isSubmitting}>Annuler</button>
+                              <button type="submit" className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:bg-blue-300" disabled={isSubmitting}>
+                                {isSubmitting ? 'Ajout...' : `Ajouter ${bulkCardInput.split('\n').filter(l => l.trim()).length || 0} Cartes`}
+                              </button>
+                            </div>
+                          </form>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* Categories Management */}
                 <div className="bg-white rounded-2xl shadow-lg p-6">
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="text-xl font-bold text-gray-900">Catégories</h3>
-                    <button
-                      onClick={() => setShowCategoryForm(true)}
-                      className="flex items-center space-x-2 px-3 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors duration-200"
-                    >
-                      <Plus className="w-4 h-4" />
-                      <span>Ajouter</span>
-                    </button>
+                    <div className="flex items-center space-x-2">
+                      <button
+                        onClick={() => setShowBulkCategoryForm(true)}
+                        className="flex items-center space-x-2 px-3 py-2 text-sm bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors duration-200"
+                      >
+                        <Plus className="w-4 h-4" />
+                        <span>Ajout en masse</span>
+                      </button>
+                      <button
+                        onClick={() => setShowCategoryForm(true)}
+                        className="flex items-center space-x-2 px-3 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors duration-200"
+                      >
+                        <Plus className="w-4 h-4" />
+                        <span>Ajouter</span>
+                      </button>
+                    </div>
                   </div>
                   
-                  <div className="space-y-3">
+                  <div className="space-y-3 max-h-96 overflow-y-auto pr-2">
                     {categories.map((category) => (
                       <div key={category.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                         <span className="font-medium text-gray-900">{category.name}</span>
@@ -647,6 +770,37 @@ const AdminPage: React.FC = () => {
                               >
                                 Ajouter
                               </button>
+                            </div>
+                          </form>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  {/* Bulk Category Form Modal */}
+                  {showBulkCategoryForm && (
+                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                      <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full">
+                        <div className="p-6">
+                          <h3 className="text-xl font-bold text-gray-900 mb-4">Ajout en masse de Catégories</h3>
+                          <form onSubmit={(e) => handleBulkCreateFromFrontend(e, 'categories')}>
+                             <div className="mb-4">
+                              <label htmlFor="bulk-categories" className="block text-sm font-medium text-gray-700 mb-2">
+                                Noms des catégories (une par ligne)
+                              </label>
+                              <textarea
+                                id="bulk-categories"
+                                value={bulkCategoryInput}
+                                onChange={(e) => setBulkCategoryInput(e.target.value)}
+                                className="w-full h-40 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                                placeholder={"Exemple de catégorie 1\nExemple de catégorie 2\nExemple de catégorie 3"}
+                                required
+                              />
+                            </div>
+                            <div className="flex justify-end space-x-3">
+                                <button type="button" onClick={() => setShowBulkCategoryForm(false)} className="px-4 py-2 text-gray-600 hover:text-gray-700" disabled={isSubmitting}>Annuler</button>
+                                <button type="submit" className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 disabled:bg-green-300" disabled={isSubmitting}>
+                                  {isSubmitting ? 'Ajout...' : `Ajouter ${bulkCategoryInput.split('\n').filter(l => l.trim()).length || 0} Catégories`}
+                                </button>
                             </div>
                           </form>
                         </div>
@@ -761,7 +915,6 @@ const AdminPage: React.FC = () => {
                   <li><strong>XLSX :</strong> Format Excel avec colonnes Description et Catégorie (entièrement fonctionnel)</li>
                   <li><strong>SQL Database :</strong> Téléchargement complet de la base de données SQLite (entièrement fonctionnel)</li>
                 </ul>
-                
               </div>
             </div>
           </div>

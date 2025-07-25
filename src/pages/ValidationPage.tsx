@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '../contexts/AppContext';
 import PasswordModal from '../components/PasswordModal';
-import { ArrowLeft, Shield, Check, X, Clock } from 'lucide-react';
+import { ArrowLeft, Shield, Check, Clock, CheckCheck } from 'lucide-react';
 
 const ValidationPage: React.FC = () => {
   const navigate = useNavigate();
@@ -17,7 +17,6 @@ const ValidationPage: React.FC = () => {
   } = useApp();
 
   const [showPasswordModal, setShowPasswordModal] = useState(false);
-  const [hoveredSubmission, setHoveredSubmission] = useState<number | null>(null);
 
   useEffect(() => {
     if (!isAuthenticated || authType !== 'validation') {
@@ -36,14 +35,18 @@ const ValidationPage: React.FC = () => {
     return success;
   };
 
-  const handleApprove = async (submissionId: number) => {
-    await updateSubmissionStatus(submissionId, 'approved');
-  };
-
+  // Handle rejecting individual submission on click
   const handleReject = async (submissionId: number) => {
     await updateSubmissionStatus(submissionId, 'rejected');
   };
 
+  // Handle accepting all pending submissions
+  const handleAcceptAll = async () => {
+    const allSubmissions = Object.values(pendingSubmissions).flat();
+    for (const submission of allSubmissions) {
+      await updateSubmissionStatus(submission.id, 'approved');
+    }
+  };
   const handleLogout = () => {
     logout();
     navigate('/');
@@ -95,12 +98,25 @@ const ValidationPage: React.FC = () => {
               </div>
             </div>
             
-            <button
-              onClick={handleLogout}
-              className="px-4 py-2 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-xl transition-all duration-200 font-medium"
-            >
-              Se déconnecter
-            </button>
+            <div className="flex items-center space-x-4">
+              {/* Accept All Responses Button - Always visible when there are pending submissions */}
+              {totalPendingSubmissions > 0 && (
+                <button
+                  onClick={handleAcceptAll}
+                  className="flex items-center space-x-2 px-6 py-3 bg-green-500 text-white rounded-xl hover:bg-green-600 transition-all duration-200 font-semibold transform hover:scale-105 shadow-lg"
+                >
+                  <CheckCheck className="w-5 h-5" />
+                  <span>Accepter toutes les réponses</span>
+                </button>
+              )}
+              
+              <button
+                onClick={handleLogout}
+                className="px-4 py-2 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-xl transition-all duration-200 font-medium"
+              >
+                Se déconnecter
+              </button>
+            </div>
           </div>
         </div>
       </header>
@@ -121,6 +137,14 @@ const ValidationPage: React.FC = () => {
           </div>
         ) : (
           <div className="space-y-8">
+            {/* Instructions for users */}
+            <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6">
+              <p className="text-blue-800 font-medium">
+                <strong>Instructions :</strong> Cliquez sur une soumission pour la rejeter automatiquement. 
+                Utilisez le bouton "Accepter toutes les réponses\" pour approuver toutes les soumissions en attente.
+              </p>
+            </div>
+
             {Object.entries(pendingSubmissions).map(([categoryName, submissions]) => (
               <div key={categoryName} className="bg-white rounded-2xl shadow-lg overflow-hidden">
                 <div className="bg-gradient-to-r from-blue-500 to-blue-600 px-6 py-4">
@@ -141,16 +165,16 @@ const ValidationPage: React.FC = () => {
                           <th className="text-left py-3 px-4 font-semibold text-gray-700">Description</th>
                           <th className="text-left py-3 px-4 font-semibold text-gray-700">Utilisateur</th>
                           <th className="text-left py-3 px-4 font-semibold text-gray-700">Date</th>
-                          <th className="text-center py-3 px-4 font-semibold text-gray-700">Actions</th>
+                          <th className="text-center py-3 px-4 font-semibold text-gray-700">Statut</th>
                         </tr>
                       </thead>
                       <tbody>
                         {submissions.map((submission) => (
                           <tr
                             key={submission.id}
-                            className="border-b border-gray-100 hover:bg-gray-50 transition-colors duration-200"
-                            onMouseEnter={() => setHoveredSubmission(submission.id)}
-                            onMouseLeave={() => setHoveredSubmission(null)}
+                            className="border-b border-gray-100 hover:bg-red-50 transition-colors duration-200 cursor-pointer"
+                            onClick={() => handleReject(submission.id)}
+                            title="Cliquer pour rejeter cette soumission"
                           >
                             <td className="py-4 px-4 font-medium text-gray-900">
                               {submission.card_description}
@@ -162,25 +186,10 @@ const ValidationPage: React.FC = () => {
                               {new Date(submission.timestamp).toLocaleString('fr-FR')}
                             </td>
                             <td className="py-4 px-4">
-                              <div className="flex justify-center space-x-2">
-                                {hoveredSubmission === submission.id && (
-                                  <>
-                                    <button
-                                      onClick={() => handleApprove(submission.id)}
-                                      className="flex items-center space-x-1 px-3 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors duration-200 transform hover:scale-105"
-                                    >
-                                      <Check className="w-4 h-4" />
-                                      <span>Approuver</span>
-                                    </button>
-                                    <button
-                                      onClick={() => handleReject(submission.id)}
-                                      className="flex items-center space-x-1 px-3 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors duration-200 transform hover:scale-105"
-                                    >
-                                      <X className="w-4 h-4" />
-                                      <span>Rejeter</span>
-                                    </button>
-                                  </>
-                                )}
+                              <div className="flex justify-center">
+                                <span className="inline-flex px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                  En attente
+                                </span>
                               </div>
                             </td>
                           </tr>

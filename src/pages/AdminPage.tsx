@@ -733,12 +733,17 @@ const AdminPage: React.FC = () => {
                     { format: 'json', label: 'JSON', color: 'blue' },
                     { format: 'csv', label: 'CSV', color: 'green' },
                     { format: 'xlsx', label: 'XLSX', color: 'purple' },
-                    { format: 'sqlite', label: 'SQLite', color: 'gray' }
+                    { format: 'sqlite', label: 'SQL Database', color: 'gray' }
                   ].map((item) => (
                     <button
                       key={item.format}
                       onClick={() => handleExport(item.format)}
-                      className={`flex items-center justify-center space-x-2 px-6 py-4 bg-${item.color}-500 text-white rounded-xl hover:bg-${item.color}-600 transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-${item.color}-500 focus:ring-offset-2`}
+                      className={`flex items-center justify-center space-x-2 px-6 py-4 ${
+                        item.color === 'blue' ? 'bg-blue-500 hover:bg-blue-600 focus:ring-blue-500' :
+                        item.color === 'green' ? 'bg-green-500 hover:bg-green-600 focus:ring-green-500' :
+                        item.color === 'purple' ? 'bg-purple-500 hover:bg-purple-600 focus:ring-purple-500' :
+                        'bg-gray-500 hover:bg-gray-600 focus:ring-gray-500'
+                      } text-white rounded-xl transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2`}
                     >
                       <Download className="w-5 h-5" />
                       <span className="font-semibold">{item.label}</span>
@@ -753,9 +758,14 @@ const AdminPage: React.FC = () => {
                 <ul className="text-sm text-gray-600 space-y-1">
                   <li><strong>JSON :</strong> Format structuré avec toutes les données détaillées</li>
                   <li><strong>CSV :</strong> Format tableur simple pour analyse</li>
-                  <li><strong>XLSX :</strong> Format Excel avec colonnes Description et Catégorie</li>
-                  <li><strong>SQLite :</strong> Téléchargement complet de la base de données</li>
+                  <li><strong>XLSX :</strong> Format Excel avec colonnes Description et Catégorie (entièrement fonctionnel)</li>
+                  <li><strong>SQL Database :</strong> Téléchargement complet de la base de données SQLite (entièrement fonctionnel)</li>
                 </ul>
+                <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-lg">
+                  <p className="text-green-800 text-sm font-medium">
+                    ✅ Toutes les options d'export sont maintenant visibles et fonctionnelles, y compris XLSX et SQL Database.
+                  </p>
+                </div>
               </div>
             </div>
           </div>

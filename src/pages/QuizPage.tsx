@@ -48,7 +48,7 @@ const QuizPage: React.FC = () => {
     if (currentCards[currentCardIndex]) {
       setSelectedCategory(categoryId);
       
-      // Submit answer
+      // Submit answer and automatically proceed to next card
       await submitAnswer(currentCards[currentCardIndex].id, categoryId);
       
       // Show success animation
@@ -57,6 +57,7 @@ const QuizPage: React.FC = () => {
       setTimeout(() => {
         setShowSuccess(false);
         setSelectedCategory(null);
+        // Automatically move to next card
         nextCard();
       }, 1500);
     }

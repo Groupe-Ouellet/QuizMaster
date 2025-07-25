@@ -24,7 +24,7 @@ const QuizPage: React.FC = () => {
   } = useApp();
 
   const [showUserModal, setShowUserModal] = useState(false);
-  const [showSuccess, setShowSuccess] = useState(false);
+
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
 
   useEffect(() => {
@@ -51,15 +51,10 @@ const QuizPage: React.FC = () => {
       // Submit answer and automatically proceed to next card
       await submitAnswer(currentCards[currentCardIndex].id, categoryId);
       
-      // Show success animation
-      setShowSuccess(true);
-      
       setTimeout(() => {
-        setShowSuccess(false);
         setSelectedCategory(null);
-        // Automatically move to next card
         nextCard();
-      }, 1500);
+      }, 200);
     }
   };
 
@@ -173,8 +168,7 @@ const QuizPage: React.FC = () => {
         onSubmit={handleUserNameSubmit}
         onClose={() => setShowUserModal(false)}
       />
-      
-      <SuccessAnimation isVisible={showSuccess} />
+    
     </div>
   );
 };

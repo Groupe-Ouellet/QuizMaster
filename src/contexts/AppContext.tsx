@@ -83,6 +83,24 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     console.log('currentCardIndex changed:', currentCardIndex);
   }, [currentCardIndex]);
 
+  // Restore userName from localStorage on mount
+  useEffect(() => {
+    const savedName = localStorage.getItem('quizUserName');
+    if (savedName) setUserName(savedName);
+  }, []);
+
+  // Save userName to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem('quizUserName', userName);
+  }, [userName]);
+
+  // Save currentCardIndex per quiz to localStorage whenever it or the quiz changes
+  useEffect(() => {
+    if (currentQuiz) {
+      localStorage.setItem(`quizCurrentCardIndex_${currentQuiz.id}`, String(currentCardIndex));
+    }
+  }, [currentCardIndex, currentQuiz]);
+
   const API_BASE = '/api';
 
   const loadActiveQuizzes = async () => {
@@ -112,7 +130,9 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
       setCurrentQuiz(data.quiz);
       setCurrentCards(data.cards);
       setCurrentCategories(data.categories);
-      setCurrentCardIndex(0);
+      // Restore index for this quiz, or 0 if not found
+      const savedIndex = localStorage.getItem(`quizCurrentCardIndex_${id}`);
+      setCurrentCardIndex(savedIndex && !isNaN(Number(savedIndex)) ? Number(savedIndex) : 0);
     } catch (error) {
       console.error('Error loading quiz:', error);
     }

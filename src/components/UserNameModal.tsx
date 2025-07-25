@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { User, X } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 interface UserNameModalProps {
   isOpen: boolean;
@@ -8,6 +9,7 @@ interface UserNameModalProps {
 }
 
 const UserNameModal: React.FC<UserNameModalProps> = ({ isOpen, onSubmit, onClose }) => {
+  const navigate = useNavigate();
   const [name, setName] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -16,6 +18,8 @@ const UserNameModal: React.FC<UserNameModalProps> = ({ isOpen, onSubmit, onClose
       onSubmit(name.trim());
     }
   };
+
+  const handleClose = () =>  navigate('/')
 
   if (!isOpen) return null;
 
@@ -31,7 +35,7 @@ const UserNameModal: React.FC<UserNameModalProps> = ({ isOpen, onSubmit, onClose
               <h2 className="text-2xl font-bold text-gray-900">Bienvenue !</h2>
             </div>
             <button
-              onClick={onClose}
+              onClick={handleClose}
               className="p-2 hover:bg-gray-100 rounded-full transition-colors duration-200"
             >
               <X className="w-5 h-5 text-gray-500" />

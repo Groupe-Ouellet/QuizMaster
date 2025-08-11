@@ -47,7 +47,7 @@ const AdminPage: React.FC = () => {
     status: 'all'
   });
 
-  const API_BASE = import.meta.env.PROD ? '/api' : 'http://localhost:3001/api';
+  const API_BASE = import.meta.env.PROD ? '/api' : 'http://localhost:7236/api';
 
   useEffect(() => {
     if (!isAuthenticated || authType !== 'admin') {

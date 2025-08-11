@@ -7,11 +7,14 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'http://localhost:3001',
+        target: 'http://localhost:7236',
         changeOrigin: true,
         secure: false,
       },
     },
+  },
+  build: {
+    outDir: 'dist',
   },
   optimizeDeps: {
     exclude: ['lucide-react'],

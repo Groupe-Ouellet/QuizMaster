@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useApp } from '../contexts/AppContext';
 import UserNameModal from '../components/UserNameModal';
 import GameCard from '../components/GameCard';
-import CategoryButton from '../components/CategoryButton';
+import CategorySelect from '../components/CategoryButton';
 import { ArrowLeft, Trophy, RotateCcw } from 'lucide-react';
 
 const QuizPage: React.FC = () => {
@@ -129,15 +129,13 @@ const QuizPage: React.FC = () => {
                 totalCards={currentCards.length}
               />
             </div>
-            <div className="mt-6 sm:mt-8 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              {currentCategories.map((category) => (
-                <CategoryButton
-                  key={category.id}
-                  category={category}
-                  onClick={() => handleCategorySelect(category.id)}
-                  isSelected={selectedCategory === category.id}
-                />
-              ))}
+            <div className="mt-6 sm:mt-8">
+              <CategorySelect
+                categories={currentCategories}
+                selectedId={selectedCategory}
+                onSelect={handleCategorySelect}
+                placeholder="Choisir ou rechercher une catégorie..."
+              />
             </div>
           </div>
         ) : (

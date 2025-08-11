@@ -38,6 +38,23 @@ app.use((req, res, next) => {
   }
 });
 
+// Domain restriction middleware - only allow quizmaster.ptranet.com
+app.use((req, res, next) => {
+  const allowedHost = 'quizmaster.ptranet.com';
+  const requestHost = req.get('host');
+  
+  // Allow requests from the allowed domain
+  if (requestHost === allowedHost || requestHost === `${allowedHost}:${PORT}`) {
+    next();
+  } else {
+    // Block requests from other domains
+    res.status(403).json({ 
+      error: 'Access denied', 
+      message: 'This application is only accessible from quizmaster.ptranet.com' 
+    });
+  }
+});
+
 app.use(express.json());
 app.use(express.static(path.join(__dirname, '../dist')));
 

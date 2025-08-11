@@ -42,15 +42,53 @@ app.use((req, res, next) => {
 app.use((req, res, next) => {
   const allowedHost = 'quizmaster.ptranet.com';
   const requestHost = req.get('host');
+  const requestOrigin = req.get('origin');
+  const cfConnectingIp = req.get('cf-connecting-ip'); // Cloudflare IP
+  const xForwardedHost = req.get('x-forwarded-host'); // Cloudflare forwarded host
+  const xRealIp = req.get('x-real-ip'); // Real IP from proxy
   
-  // Allow requests from the allowed domain
-  if (requestHost === allowedHost || requestHost === `${allowedHost}:${PORT}`) {
+  // Debug logging
+  console.log('Request from:', { 
+    host: requestHost, 
+    origin: requestOrigin, 
+    cfConnectingIp,
+    xForwardedHost,
+    xRealIp,
+    url: req.url 
+  });
+  
+  // Check if host matches allowed domain (with or without port)
+  const isAllowedHost = requestHost === allowedHost || 
+                       requestHost === `${allowedHost}:${PORT}` ||
+                       requestHost === `${allowedHost}:80` ||
+                       requestHost === `${allowedHost}:443` ||
+                       xForwardedHost === allowedHost ||
+                       xForwardedHost === `${allowedHost}:${PORT}` ||
+                       xForwardedHost === `${allowedHost}:80` ||
+                       xForwardedHost === `${allowedHost}:443`;
+  
+  // Check if origin matches (for CORS requests)
+  const isAllowedOrigin = !requestOrigin || 
+                          requestOrigin === `https://${allowedHost}` ||
+                          requestOrigin === `http://${allowedHost}`;
+  
+  // Allow Cloudflare requests (they have cf-connecting-ip header)
+  const isCloudflareRequest = cfConnectingIp !== undefined;
+  
+  if ((isAllowedHost && isAllowedOrigin) || isCloudflareRequest) {
     next();
   } else {
+    console.log('Access denied for:', { 
+      host: requestHost, 
+      origin: requestOrigin, 
+      cfConnectingIp,
+      xForwardedHost 
+    });
     // Block requests from other domains
     res.status(403).json({ 
       error: 'Access denied', 
-      message: 'This application is only accessible from quizmaster.ptranet.com' 
+      message: 'This application is only accessible from quizmaster.ptranet.com',
+      debug: { host: requestHost, origin: requestOrigin, cfConnectingIp, xForwardedHost }
     });
   }
 });

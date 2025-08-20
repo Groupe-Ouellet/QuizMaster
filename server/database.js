@@ -26,6 +26,7 @@ function initializeDatabase() {
       description TEXT,
       isActive BOOLEAN DEFAULT 1,
       autoValidate BOOLEAN DEFAULT 0,
+      currentIndex INTEGER DEFAULT 0,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )`);
 

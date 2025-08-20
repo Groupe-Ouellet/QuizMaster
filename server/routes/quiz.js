@@ -1,8 +1,40 @@
-
 import express from 'express';
 import db from '../database.js';
 
 const router = express.Router();
+
+// Get currentIndex (shared progress) for a quiz
+router.get('/:id/progress', (req, res) => {
+  const quizId = req.params.id;
+  db.get('SELECT currentIndex FROM quiz WHERE id = ?', [quizId], (err, row) => {
+    if (err) {
+      res.status(500).json({ error: err.message });
+      return;
+    }
+    if (!row) {
+      res.status(404).json({ error: 'Quiz not found' });
+      return;
+    }
+    res.json({ currentIndex: row.currentIndex });
+  });
+});
+
+// Update currentIndex (shared progress) for a quiz
+router.patch('/:id/progress', (req, res) => {
+  const quizId = req.params.id;
+  const { currentIndex } = req.body;
+  if (typeof currentIndex !== 'number' || currentIndex < 0) {
+    res.status(400).json({ error: 'Invalid currentIndex' });
+    return;
+  }
+  db.run('UPDATE quiz SET currentIndex = ? WHERE id = ?', [currentIndex, quizId], function(err) {
+    if (err) {
+      res.status(500).json({ error: err.message });
+      return;
+    }
+    res.json({ id: quizId, currentIndex });
+  });
+});
 
 // PATCH only autoValidate
 router.patch('/:id/autovalidate', (req, res) => {

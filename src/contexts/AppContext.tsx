@@ -96,11 +96,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
   }, [userName]);
 
   // Save currentCardIndex per quiz to localStorage whenever it or the quiz changes
-  useEffect(() => {
-    if (currentQuiz) {
-      localStorage.setItem(`quizCurrentCardIndex_${currentQuiz.id}`, String(currentCardIndex));
-    }
-  }, [currentCardIndex, currentQuiz]);
+  // (Plus besoin de localStorage pour la progression)
 
   const API_BASE = '/api';
 
@@ -144,9 +140,10 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
       setCurrentQuiz({ ...data.quiz, autoValidate: !!data.quiz.autoValidate });
       setCurrentCards(data.cards);
       setCurrentCategories(data.categories);
-      // Restore index for this quiz, or 0 if not found
-      const savedIndex = localStorage.getItem(`quizCurrentCardIndex_${id}`);
-      setCurrentCardIndex(savedIndex && !isNaN(Number(savedIndex)) ? Number(savedIndex) : 0);
+  // Get shared progress from server
+  const progressRes = await fetch(`${API_BASE}/quiz/${id}/progress`);
+  const progressData = await progressRes.json();
+  setCurrentCardIndex(typeof progressData.currentIndex === 'number' ? progressData.currentIndex : 0);
     } catch (error) {
       console.error('Error loading quiz:', error);
     }
@@ -181,13 +178,37 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     }
   };
 
-  const nextCard = () => {
-    setCurrentCardIndex(prev => prev + 1);
+  const nextCard = async () => {
+    if (!currentQuiz) return;
+    const newIndex = currentCardIndex + 1;
+    setCurrentCardIndex(newIndex);
+    // Update shared progress on server
+    try {
+      await fetch(`/api/quiz/${currentQuiz.id}/progress`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ currentIndex: newIndex })
+      });
+    } catch (error) {
+      console.error('Erreur lors de la mise à jour de la progression partagée:', error);
+    }
   };
 
-  const resetQuiz = () => {
+  const resetQuiz = async () => {
     setCurrentCardIndex(0);
     setUserName('');
+    // Reset shared progress on server
+    if (currentQuiz) {
+      try {
+        await fetch(`/api/quiz/${currentQuiz.id}/progress`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ currentIndex: 0 })
+        });
+      } catch (error) {
+        console.error('Erreur lors de la réinitialisation de la progression partagée:', error);
+      }
+    }
   };
 
   const authenticate = async (password: string, type: 'validation' | 'admin'): Promise<boolean> => {

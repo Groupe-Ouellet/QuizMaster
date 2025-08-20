@@ -5,6 +5,7 @@ interface Quiz {
   name: string;
   description: string;
   isActive: boolean;
+  autoValidate?: boolean;
 }
 
 interface Card {
@@ -107,7 +108,13 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     try {
       const response = await fetch(`${API_BASE}/quiz/active`);
       const data = await response.json();
-      setActiveQuizzes(data.quizzes);
+      // Ensure autoValidate is always boolean
+      setActiveQuizzes(
+        data.quizzes.map((q: any) => ({
+          ...q,
+          autoValidate: !!q.autoValidate
+        }))
+      );
     } catch (error) {
       console.error('Error loading active quizzes:', error);
     }
@@ -117,7 +124,13 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     try {
       const response = await fetch(`${API_BASE}/quiz/all`);
       const data = await response.json();
-      setAllQuizzes(data.quizzes);
+      // Ensure autoValidate is always boolean
+      setAllQuizzes(
+        data.quizzes.map((q: any) => ({
+          ...q,
+          autoValidate: !!q.autoValidate
+        }))
+      );
     } catch (error) {
       console.error('Error loading all quizzes:', error);
     }
@@ -127,7 +140,8 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     try {
       const response = await fetch(`${API_BASE}/quiz/${id}`);
       const data = await response.json();
-      setCurrentQuiz(data.quiz);
+      // Ensure autoValidate is always boolean
+      setCurrentQuiz({ ...data.quiz, autoValidate: !!data.quiz.autoValidate });
       setCurrentCards(data.cards);
       setCurrentCategories(data.categories);
       // Restore index for this quiz, or 0 if not found
@@ -140,7 +154,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
 
   const submitAnswer = async (cardId: number, categoryId: number) => {
     try {
-      await fetch(`${API_BASE}/submissions`, {
+      const res = await fetch(`${API_BASE}/submissions`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -151,6 +165,17 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
           category_id: categoryId,
         }),
       });
+      // Si autovalidation est active, valider la soumission immédiatement
+      if (currentQuiz?.autoValidate && res.ok) {
+        const submission = await res.json();
+        if (submission?.id) {
+          await fetch(`${API_BASE}/submissions/${submission.id}/status`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status: 'approved' })
+          });
+        }
+      }
     } catch (error) {
       console.error('Error submitting answer:', error);
     }

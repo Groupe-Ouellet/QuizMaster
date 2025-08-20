@@ -70,11 +70,13 @@ const HomePage: React.FC = () => {
         ) : (
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 md:gap-8">
             {activeQuizzes.map((quiz) => (
-              <QuizCard
-                key={quiz.id}
-                quiz={quiz}
-                onClick={() => navigate(`/quiz/${quiz.id}`)}
-              />
+              <div key={quiz.id} className="relative">
+                {/* Autovalidation badge is now handled inside QuizCard for a more fluid UI */}
+                <QuizCard
+                  quiz={quiz}
+                  onClick={() => navigate(`/quiz/${quiz.id}`)}
+                />
+              </div>
             ))}
           </div>
         )}

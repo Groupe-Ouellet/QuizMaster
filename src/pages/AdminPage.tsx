@@ -26,7 +26,7 @@ const AdminPage: React.FC = () => {
   // Form states
   const [showQuizForm, setShowQuizForm] = useState(false);
   const [editingQuiz, setEditingQuiz] = useState<any>(null);
-  const [quizForm, setQuizForm] = useState({ name: '', description: '', isActive: true });
+  const [quizForm, setQuizForm] = useState({ name: '', description: '', isActive: true, autoValidate: false });
 
   // Content management states
   const [cards, setCards] = useState<any[]>([]);
@@ -111,7 +111,7 @@ const AdminPage: React.FC = () => {
 
       if (response.ok) {
         setShowQuizForm(false);
-        setQuizForm({ name: '', description: '', isActive: true });
+  setQuizForm({ name: '', description: '', isActive: true, autoValidate: false });
         loadAllQuizzes();
       }
     } catch (error) {
@@ -132,7 +132,7 @@ const AdminPage: React.FC = () => {
 
       if (response.ok) {
         setEditingQuiz(null);
-        setQuizForm({ name: '', description: '', isActive: true });
+  setQuizForm({ name: '', description: '', isActive: true, autoValidate: false });
         loadAllQuizzes();
       }
     } catch (error) {
@@ -446,11 +446,27 @@ const AdminPage: React.FC = () => {
                         <td className="py-4 px-6 font-medium text-gray-900">{quiz.name}</td>
                         <td className="py-4 px-6 text-gray-600">{quiz.description}</td>
                         <td className="py-4 px-6 text-center">
-                          <span className={`inline-flex px-2 py-1 rounded-full text-xs font-medium ${
-                            quiz.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
-                          }`}>
-                            {quiz.isActive ? 'Actif' : 'Inactif'}
-                          </span>
+                          <div className="flex flex-col items-center gap-1">
+                            <span className={`inline-flex px-2 py-1 rounded-full text-xs font-medium ${
+                              quiz.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                            }`}>
+                              {quiz.isActive ? 'Actif' : 'Inactif'}
+                            </span>
+                            <button
+                              onClick={async () => {
+                                await fetch(`${API_BASE}/quiz/${quiz.id}/autovalidate`, {
+                                  method: 'PATCH',
+                                  headers: { 'Content-Type': 'application/json' },
+                                  body: JSON.stringify({ autoValidate: !quiz.autoValidate })
+                                });
+                                loadAllQuizzes();
+                              }}
+                              className={`flex items-center mt-1 px-2 py-1 rounded-full text-xs font-medium border transition-colors duration-200 ${quiz.autoValidate ? 'bg-blue-100 text-blue-700 border-blue-300' : 'bg-gray-100 text-gray-500 border-gray-300'}`}
+                              title={quiz.autoValidate ? 'Désactiver autovalidation' : 'Activer autovalidation'}
+                            >
+                              {quiz.autoValidate ? 'Autovalidation : ON' : 'Autovalidation : OFF'}
+                            </button>
+                          </div>
                         </td>
                         <td className="py-4 px-6">
                           <div className="flex justify-center space-x-2">
@@ -460,7 +476,8 @@ const AdminPage: React.FC = () => {
                                 setQuizForm({
                                   name: quiz.name,
                                   description: quiz.description,
-                                  isActive: quiz.isActive
+                                  isActive: quiz.isActive,
+                                  autoValidate: quiz.autoValidate ?? false
                                 });
                               }}
                               className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors duration-200"
@@ -540,7 +557,7 @@ const AdminPage: React.FC = () => {
                           onClick={() => {
                             setShowQuizForm(false);
                             setEditingQuiz(null);
-                            setQuizForm({ name: '', description: '', isActive: true });
+                            setQuizForm({ name: '', description: '', isActive: true, autoValidate: false });
                           }}
                           className="px-4 py-2 text-gray-600 hover:text-gray-700 transition-colors duration-200"
                         >

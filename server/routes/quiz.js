@@ -1,12 +1,26 @@
+
 import express from 'express';
 import db from '../database.js';
 
 const router = express.Router();
 
+// PATCH only autoValidate
+router.patch('/:id/autovalidate', (req, res) => {
+  const quizId = req.params.id;
+  const { autoValidate } = req.body;
+  const sql = 'UPDATE quiz SET autoValidate = ? WHERE id = ?';
+  db.run(sql, [autoValidate ? 1 : 0, quizId], function(err) {
+    if (err) {
+      res.status(500).json({ error: err.message });
+      return;
+    }
+    res.json({ id: quizId, autoValidate });
+  });
+});
+
 // Get all active quizzes
 router.get('/active', (req, res) => {
   const sql = 'SELECT * FROM quiz WHERE isActive = 1 ORDER BY created_at DESC';
-  
   db.all(sql, [], (err, rows) => {
     if (err) {
       res.status(500).json({ error: err.message });
@@ -71,34 +85,28 @@ router.get('/:id', (req, res) => {
 
 // Create new quiz
 router.post('/', (req, res) => {
-  const { name, description, isActive = true } = req.body;
-  
-  const sql = 'INSERT INTO quiz (name, description, isActive) VALUES (?, ?, ?)';
-  
-  db.run(sql, [name, description, isActive], function(err) {
+  const { name, description, isActive = true, autoValidate = false } = req.body;
+  const sql = 'INSERT INTO quiz (name, description, isActive, autoValidate) VALUES (?, ?, ?, ?)';
+  db.run(sql, [name, description, isActive, autoValidate ? 1 : 0], function(err) {
     if (err) {
       res.status(500).json({ error: err.message });
       return;
     }
-    
-    res.json({ id: this.lastID, name, description, isActive });
+    res.json({ id: this.lastID, name, description, isActive, autoValidate });
   });
 });
 
 // Update quiz
 router.put('/:id', (req, res) => {
-  const { name, description, isActive } = req.body;
+  const { name, description, isActive, autoValidate } = req.body;
   const quizId = req.params.id;
-  
-  const sql = 'UPDATE quiz SET name = ?, description = ?, isActive = ? WHERE id = ?';
-  
-  db.run(sql, [name, description, isActive, quizId], function(err) {
+  const sql = 'UPDATE quiz SET name = ?, description = ?, isActive = ?, autoValidate = ? WHERE id = ?';
+  db.run(sql, [name, description, isActive, autoValidate ? 1 : 0, quizId], function(err) {
     if (err) {
       res.status(500).json({ error: err.message });
       return;
     }
-    
-    res.json({ id: quizId, name, description, isActive });
+    res.json({ id: quizId, name, description, isActive, autoValidate });
   });
 });
 

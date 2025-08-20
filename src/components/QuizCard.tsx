@@ -6,6 +6,7 @@ interface Quiz {
   name: string;
   description: string;
   isActive: boolean;
+  autoValidate?: boolean;
 }
 
 interface QuizCardProps {
@@ -17,8 +18,18 @@ const QuizCard: React.FC<QuizCardProps> = ({ quiz, onClick }) => {
   return (
     <div
       onClick={onClick}
-      className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 cursor-pointer group overflow-hidden border-2 border-green-200 group-hover:text-green-300 mb-2 sm:mb-0"
+      className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 cursor-pointer group overflow-hidden border-2 border-green-200 group-hover:text-green-300 mb-2 sm:mb-0 relative"
     >
+      {/* Animated Badge autovalidation */}
+      {quiz.autoValidate && (
+        <span
+          className="absolute top-2 right-2 flex items-center gap-1 bg-gradient-to-r from-blue-200 to-blue-100 text-blue-700 text-xs px-3 py-1 rounded-full z-10 shadow-lg animate-fade-in"
+          style={{ animation: 'fadeInBadge 0.7s cubic-bezier(.4,2,.6,1)'}}
+        >
+          <svg className="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+          <span className="font-semibold tracking-wide">Autovalidation</span>
+        </span>
+      )}
       <div className="p-4 sm:p-8">
         <div className="flex items-start justify-between mb-2 sm:mb-4">
           <div className="flex-1">

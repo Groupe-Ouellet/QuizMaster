@@ -25,6 +25,7 @@ function initializeDatabase() {
       name TEXT NOT NULL,
       description TEXT,
       isActive BOOLEAN DEFAULT 1,
+      autoValidate BOOLEAN DEFAULT 0,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )`);
 
@@ -73,9 +74,9 @@ function insertSampleData() {
 
     if (row.count === 0) {
       // Insert sample quiz
-      db.run(`INSERT INTO quiz (name, description, isActive) VALUES 
-        ('Quiz Fruits et Légumes', 'Associez chaque aliment à sa catégorie correcte.', 1),
-        ('Quiz Animaux', 'Classifiez les animaux selon leur habitat naturel.', 1)
+      db.run(`INSERT INTO quiz (name, description, isActive, autoValidate) VALUES 
+        ('Quiz Fruits et Légumes', 'Associez chaque aliment à sa catégorie correcte.', 1, 0),
+        ('Quiz Animaux', 'Classifiez les animaux selon leur habitat naturel.', 1, 0)
       `, function(err) {
         if (err) {
           console.error('Error inserting sample quiz:', err);

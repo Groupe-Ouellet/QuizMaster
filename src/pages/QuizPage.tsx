@@ -89,8 +89,13 @@ const QuizPage: React.FC = () => {
               <ArrowLeft className="w-5 h-5" />
               <span className="font-medium hidden sm:inline">Retour</span>
             </button>
-            <div className="text-center flex-1 mx-4">
+            <div className="text-center flex-1 mx-4 relative">
               <h1 className="text-xl sm:text-2xl font-bold text-gray-900 truncate">{currentQuiz?.name || 'Chargement...'}</h1>
+              {currentQuiz?.autoValidate && (
+                <span className="absolute right-0 top-0 bg-blue-100 text-blue-700 text-xs px-2 py-1 rounded-full z-10 shadow">
+                  Autovalidation activée
+                </span>
+              )}
               {userName && <p className="text-green-600 font-medium text-sm sm:text-base">Joueur : {userName}</p>}
             </div>
             <button

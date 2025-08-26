@@ -4,7 +4,7 @@ services:
   app:
     build: .
     ports:
-      - "7826:7826"
+      - "7236:7236"
     volumes:
       - ./server:/app/server
     command: npm run server

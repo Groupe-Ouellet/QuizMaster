@@ -10,4 +10,4 @@ COPY . .
 
 RUN npm run build
 
-EXPOSE 7826
+EXPOSE 7236

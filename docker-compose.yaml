@@ -8,7 +8,6 @@ services:
     volumes:
       - ./server:/app/server
     command: npm run server
-    healthcheck:
-      test: ["CMD-SHELL", "nc -z localhost 7236 || exit 1"]
-      interval: 30s
-      timeout: 10s
+    environment:
+      - NODE_ENV=production
+    restart: unless-stopped

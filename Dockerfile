@@ -11,3 +11,5 @@ COPY . .
 RUN npm run build
 
 EXPOSE 7236
+
+CMD ["npm", "run", "server"]

@@ -8,25 +8,29 @@ const __dirname = path.dirname(__filename);
 
 const dbPath = path.join(__dirname, 'quiz_master.db');
 
-// Control DB initialization/reset via environment variable:
-// Set INITIALIZE_DB=1 or INITIALIZE_DB=true to force initialization (will remove existing DB file
-// if present and insert sample data). When false/unset, sample data insertion is skipped.
+// Control DB initialization/reset via environment variables:
+// - RESET_DB=1|true : delete existing DB file at startup (force reset)
+// - INITIALIZE_DB=1|true : when set, insert sample data only if the DB did not exist
+//   before startup (i.e. on a fresh DB or after RESET_DB). This avoids accidental
+//   deletion when a platform sets INITIALIZE_DB by default.
+const resetFlag = (process.env.RESET_DB === '1' || (process.env.RESET_DB || '').toLowerCase() === 'true');
 const initializeFlag = (process.env.INITIALIZE_DB === '1' || (process.env.INITIALIZE_DB || '').toLowerCase() === 'true');
 
 // Check whether the DB file already existed on disk before opening.
-const dbExistedBeforeOpen = fs.existsSync(dbPath);
+let dbExistedBeforeOpen = fs.existsSync(dbPath);
 
-// If user asked to initialize/reset, remove existing DB so we start fresh.
-if (initializeFlag) {
+// If user asked to reset, remove existing DB so we start fresh.
+if (resetFlag) {
   if (dbExistedBeforeOpen) {
     try {
       fs.unlinkSync(dbPath);
-      console.log('INITIALIZE_DB=true: existing database file removed to reset DB');
+      console.log('RESET_DB=true: existing database file removed to reset DB');
+      dbExistedBeforeOpen = false; // reflect that file is now gone
     } catch (err) {
-      console.error('INITIALIZE_DB=true: failed to remove existing DB file:', err);
+      console.error('RESET_DB=true: failed to remove existing DB file:', err);
     }
   } else {
-    console.log('INITIALIZE_DB=true: initializing new database (no existing DB file found)');
+    console.log('RESET_DB=true: no existing DB file found; a fresh DB will be created');
   }
 }
 
@@ -83,10 +87,15 @@ function initializeDatabase() {
       FOREIGN KEY (category_id) REFERENCES category (id) ON DELETE CASCADE
     )`);
 
-    // Insert sample data only if initialization flag is set.
-    // When INITIALIZE_DB=true we reset/initialize the DB and seed sample data.
+    // Insert sample data only when INITIALIZE_DB is set AND the DB did not exist
+    // before startup (either brand new or was removed by RESET_DB). This prevents
+    // accidental reseeding on platforms that set env vars globally.
     if (initializeFlag) {
-      insertSampleData();
+      if (!dbExistedBeforeOpen) {
+        insertSampleData();
+      } else {
+        console.log('INITIALIZE_DB=true but DB already existed before startup; skipping sample data insertion');
+      }
     } else {
       console.log('INITIALIZE_DB not set: skipping sample data insertion');
     }

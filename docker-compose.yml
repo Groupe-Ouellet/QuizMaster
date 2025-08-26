@@ -1,7 +1,8 @@
 version: '3.8'
 
 services:
-  quizmaster:
+  catego:
+    container_name: catego-app
     build:
       context: .
       dockerfile: Dockerfile.prod
@@ -11,7 +12,7 @@ services:
       - NODE_ENV=production
       - PORT=7236
     volumes:
-      # Mount the database file to persist data
+      # Mount just the database if you prefer
       - ./server/quiz_master.db:/app/server/quiz_master.db
     restart: unless-stopped
     healthcheck:
@@ -20,3 +21,9 @@ services:
       timeout: 10s
       retries: 3
       start_period: 40s
+    networks:
+      - catego-network
+
+networks:
+  catego-network:
+    driver: bridge

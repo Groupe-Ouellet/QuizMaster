@@ -12,8 +12,8 @@ services:
       - NODE_ENV=production
       - PORT=7236
     volumes:
-      # Mount just the database if you prefer
-      - ./server/quiz_master.db:/app/server/quiz_master.db
+      # Mount the entire server directory to ensure database file is properly mounted
+      - ./server:/app/server
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:7236/health"]

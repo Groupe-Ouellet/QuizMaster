@@ -1,11 +1,34 @@
 import sqlite3 from 'sqlite3';
 import path from 'path';
+import fs from 'fs';
 import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const dbPath = path.join(__dirname, 'quiz_master.db');
+
+// Control DB initialization/reset via environment variable:
+// Set INITIALIZE_DB=1 or INITIALIZE_DB=true to force initialization (will remove existing DB file
+// if present and insert sample data). When false/unset, sample data insertion is skipped.
+const initializeFlag = (process.env.INITIALIZE_DB === '1' || (process.env.INITIALIZE_DB || '').toLowerCase() === 'true');
+
+// Check whether the DB file already existed on disk before opening.
+const dbExistedBeforeOpen = fs.existsSync(dbPath);
+
+// If user asked to initialize/reset, remove existing DB so we start fresh.
+if (initializeFlag) {
+  if (dbExistedBeforeOpen) {
+    try {
+      fs.unlinkSync(dbPath);
+      console.log('INITIALIZE_DB=true: existing database file removed to reset DB');
+    } catch (err) {
+      console.error('INITIALIZE_DB=true: failed to remove existing DB file:', err);
+    }
+  } else {
+    console.log('INITIALIZE_DB=true: initializing new database (no existing DB file found)');
+  }
+}
 
 const db = new sqlite3.Database(dbPath, sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE, (err) => {
   if (err) {
@@ -60,8 +83,13 @@ function initializeDatabase() {
       FOREIGN KEY (category_id) REFERENCES category (id) ON DELETE CASCADE
     )`);
 
-    // Insert sample data
-    insertSampleData();
+    // Insert sample data only if initialization flag is set.
+    // When INITIALIZE_DB=true we reset/initialize the DB and seed sample data.
+    if (initializeFlag) {
+      insertSampleData();
+    } else {
+      console.log('INITIALIZE_DB not set: skipping sample data insertion');
+    }
   });
 }
 

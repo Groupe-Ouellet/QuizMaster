@@ -2,14 +2,16 @@ version: '3.8'
 
 services:
   quizmaster:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile.prod
     ports:
       - "7236:7236"
     environment:
       - NODE_ENV=production
       - PORT=7236
     volumes:
-      # Mount the database file so it persists
+      # Mount the database file to persist data
       - ./server/quiz_master.db:/app/server/quiz_master.db
     restart: unless-stopped
     healthcheck:

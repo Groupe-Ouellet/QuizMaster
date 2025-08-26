@@ -7,4 +7,4 @@ services:
       - "7826:7826"
     volumes:
       - ./server:/app/server
-    command: npm run prod
+    command: npm run server
